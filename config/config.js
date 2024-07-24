@@ -4,5 +4,5 @@ module.exports = {
   DBUSER: 'root',
   DBPASSWORD: '123456',
   DBPORT: 3306,
-  DBNAME: 'financial-management-system'
+  DBNAME: 'basis-system'
 }
