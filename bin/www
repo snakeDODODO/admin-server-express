@@ -1,0 +1,92 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+// 这是是应用入口，实际上这里做的第一件事是require，即导入真实的应用入口，
+// 也就是项目中的app.js，appjs会设置并返回express（）应用对象
+
+var app = require('../app');
+var debug = require('debug')('basis-api:server');
+var http = require('http');
+
+/**
+ * 从环境中获取端口并存储在Express中.
+ */
+
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+/**
+ * 创建HTTP服务器.
+ */
+
+var server = http.createServer(app);
+
+/**
+ * 在所有网络接口上侦听提供的端口.
+ */
+
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+/**
+ * 将端口规范化为数字、字符串或false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * HTTP服务器“error”事件的事件侦听器.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // 使用友好消息处理特定的侦听错误
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+    default:
+      throw error;
+  }
+}
+
+/**
+ * HTTP服务器“侦听”事件的事件侦听器.
+ */
+
+function onListening() {
+  // 模块内置方法，用于获取服务器的绑定地址
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
