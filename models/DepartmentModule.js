@@ -36,4 +36,5 @@ const DepartmentModule = sequelize.define('department',{
 },{
   freezeTableName: true, // 防止修改表名为复数
 })
+
 module.exports = DepartmentModule

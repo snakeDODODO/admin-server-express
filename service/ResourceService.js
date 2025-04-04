@@ -1,63 +1,67 @@
-const ResourceModel = require('../models/ResourceModule')
-const sequelize = require('../config/db.config')
-const { Op } = require('@sequelize/core')
+const ResourceModel = require('../models/ResourceModule');
+const sequelize = require('../config/db.config');
+const { Op } = require('@sequelize/core');
 
 const ResourceService = {
   // 获取所有资源数据
   getResourceList: async ({ title, hidden }) => {
     try {
       // 定义查询条件对象
-      const whereClause = {}
+      const whereClause = {};
       if (title) {
         whereClause.title = {
-          [Op.like]: `${title}%`,
-        }
+          [Op.like]: `${title}%`
+        };
       }
       if (hidden) {
         whereClause.hidden = {
-          [Op.eq]: hidden,
-        }
+          [Op.eq]: hidden
+        };
       }
       let resources = await ResourceModel.findAll({
-        where: whereClause,
-      })
-      return resources.map((resource) => resource.toJSON())
+        where: whereClause
+      });
+      return resources.map(resource => resource.toJSON());
     } catch (error) {
-      return Promise.reject(error)
+      return Promise.reject(error);
     }
   },
   // 添加资源
-  addResource: async (resource) => {
+  addResource: async resource => {
     try {
-      let result = await ResourceModel.create(resource)
-      return result
+      let result = await ResourceModel.create(resource);
+      return result;
     } catch (error) {
-      return Promise.reject(error)
+      return Promise.reject(error);
     }
   },
   // 根据ID删除资源数据，包括子资源
-  deleteResourceCascadeById: async (id) => {
+  deleteResourceCascadeById: async id => {
     // 自动开启托管事物
     try {
       const result = await sequelize.transaction(async t => {
-              // 删除子资源
-      await ResourceModel.destroy({
-        where: {
-          parent_id: id
-        },
+        // 删除子资源
+        await ResourceModel.destroy(
+          {
+            where: {
+              parent_id: id
+            }
+          },
+          { transaction: t }
+        );
 
-      },{ transaction: t });
-
-      // 删除父资源
-      const resource = await ResourceModel.destroy({
-        where: {
-          id
-        },
-
-      },{ transaction: t });
-      return resource;
+        // 删除父资源
+        const resource = await ResourceModel.destroy(
+          {
+            where: {
+              id
+            }
+          },
+          { transaction: t }
+        );
+        return resource;
       });
-      return result
+      return result;
     } catch (error) {
       return Promise.reject(error);
     }
@@ -93,28 +97,28 @@ const ResourceService = {
     try {
       const result = await ResourceModel.update(updatedData, {
         where: {
-          id,
-        },
-      })
-      return result
+          id
+        }
+      });
+      return result;
     } catch (error) {
-      return Promise.reject(error)
+      return Promise.reject(error);
     }
   },
   // 根据资源id获取资源数据
-  getResourceListById: async (id) => {
+  getResourceListById: async id => {
     try {
       let result = await ResourceModel.findAll({
         where: {
-          id,
+          id
         },
-        raw: true,
-      })
-      return result
+        raw: true
+      });
+      return result;
     } catch (error) {
-      return Promise.reject(error)
+      return Promise.reject(error);
     }
-  },
-}
+  }
+};
 
-module.exports = ResourceService
+module.exports = ResourceService;

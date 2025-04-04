@@ -4,6 +4,7 @@ var DictionaryRouter = express.Router();
 
 /* GET users listing. */
 DictionaryRouter.get('/api/dictionary/getdictionaryall',DictionaryController.getDictionaryAll); // 获取字典列表
+DictionaryRouter.get('/api/dictionary/getdictionaryforstore',DictionaryController.getDictionaryForStore); // 获取字典存储store
 DictionaryRouter.post('/api/dictionary/adddictionary',DictionaryController.addDictionary); // 添加字典
 DictionaryRouter.post('/api/dictionary/deletedictionary',DictionaryController.delDictionaryById);// 删除字典
 DictionaryRouter.put('/api/dictionary/updatedictionary/:id',DictionaryController.updateDictionary); // 更新字典

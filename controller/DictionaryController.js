@@ -15,6 +15,19 @@ const DictionaryController = {
       next(error)
     }
   },
+  // 获取字典存储store
+  getDictionaryForStore: async (req,res,next) => {
+    try {
+      let result = await DictionaryService.getDictionaryForStore()
+      if (!result) {
+        res.send(ApiResult.Fail(400,'字典列表获取失败'))
+      } else {
+        res.send(ApiResult.Success(200,'字典列表获取成功',result))
+      }
+    } catch (error) {
+      next(error)
+    }
+  },
   // 添加字典
   addDictionary: async (req,res,next) => {
     try {
