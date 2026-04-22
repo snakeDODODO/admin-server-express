@@ -76,34 +76,41 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
   // 如果token有效 ,next()
   // 如果token过期了, 返回401错误
-  /*
-    首先排除登录接口(因为登录接口没有token)
-  */
-  if (req.url === '/api/user/login') {
+
+  // 1. 定义【无需校验token的白名单接口】，支持正则，扩展性极强
+  const whitePaths = ['/api/user/login'];
+  if (whitePaths.includes(req.path)) {
     next();
     return;
   }
-  const token = req.headers['authorization'];
-  // token解析
-  if (token !== undefined || token !== null) {
-    // 校验token
-    let payload = JWT.verify(token);
-    if (payload) {
-      // 每一次请求，重新生成新的token用来延续时间
-      let newToken = JWT.generate(
-        {
-          _id: payload._id,
-          username: payload.username
-        },
-        '7d'
-      );
-      res.header('Authorization', newToken);
-      next();
-    } else {
-      console.log('3');
-      // token验证失败则返回错误信息
-      res.status(401).send({ errCode: '-1', errorInfo: 'token过期或无效' });
-    }
+
+  // 2. 获取请求头中的token，并做规范校验
+  let token = req.headers['authorization'] || '';
+  // 遵循Bearer规范，去除前缀
+  if (token.startsWith('Bearer ')) {
+    token = token.slice(7).trim(); // 切掉前缀+空格，得到纯净的token字符串
+  }
+
+  // 3. 无token的情况，直接返回401错误
+  if (!token) {
+    return res.status(401).send({ errCode: '-1', errorInfo: '请先登录，请求头中无token' });
+  }
+
+  // 4. 调用你的封装校验token
+  const payload = JWT.verify(token);
+  if (payload) {
+    // token有效：无感刷新token，延续登录状态（你的核心逻辑，保留）
+    const newToken = JWT.generate(
+      { _id: payload._id, username: payload.username },
+      '7d' // 有效期可根据需求改，比如2h更安全
+    );
+    // 返回新token给前端，前端后续请求自动使用
+    res.header('Authorization', newToken);
+    // 放行，执行后续业务逻辑
+    next();
+  } else {
+    // token无效/过期：返回401错误
+    res.status(401).send({ errCode: '-1', errorInfo: 'token过期或无效，请重新登录' });
   }
 });
 
@@ -142,9 +149,11 @@ app.use(function (err, req, res, next) {
   // 设置局部变量，只在开发模式中显示错误
   // res.locals.message = err.message;
   // res.locals.error = req.app.get('env') === 'development' ? err : {};
-  console.error(err.stack);
+  // console.error(err.stack);
   // 加载错误页面
-  res.status(err.status || 500).send('服务器错误');
+  // res.status(err.status || 500).send('服务器错误');
+  console.error('服务器错误:', err.message);
+  res.status(500).json({ code: 500, message: '服务器内部错误' });
 });
 
 // 这里是真实的应用入口，被导出是因为实际入口文件不是这个，这里会被加载然后启动服务

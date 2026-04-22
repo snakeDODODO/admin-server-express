@@ -3,8 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "build": "npm run lint && npm audit",
     "start": "node ./bin/www",
-    "devstart": "nodemon ./bin/www"
+    "devstart": "nodemon ./bin/www",
+    "package": "pkg . --out-path dist"
   },
   "dependencies": {
     "@sequelize/core": "^7.0.0-alpha.27",
@@ -24,6 +26,15 @@
     "ws": "^8.18.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "scripts": "bin/www",
+    "assets": [
+      "public/**/*",
+      "views/**/*"
+    ],
+    "outputPath": "dist"
   }
 }
